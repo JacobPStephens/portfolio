@@ -3,9 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>WebGL</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    Hello from code 2
+
+<canvas id="c"></canvas>
+
+<!--
+for most samples webgl-utils only provides shader compiling/linking and
+canvas resizing because why clutter the examples with code that's the same in every sample.
+See https://webglfundamentals.org/webgl/lessons/webgl-boilerplate.html
+and https://webglfundamentals.org/webgl/lessons/webgl-resizing-the-canvas.html
+for webgl-utils, m3, m4, and webgl-lessons-ui.
+-->
+<script src="https://webglfundamentals.org/webgl/resources/webgl-utils.js"></script>
+
+<script id="vertexShader" type="notjs" src="default.frag">
+    attribute vec4 a_position;
+    varying vec4 v_position;
+
+    void main() {
+        gl_Position = a_position;
+        v_position = a_position;
+    }
+</script>
+<script id="fragmentShader" type="notjs">
+    precision mediump float;
+    varying vec4 v_position;
+    uniform float time;
+    uniform float mouseX; // from 0 to 1
+    uniform float mouseY; // from 0 to 1
+    uniform float aspect;
+
+    void main() {
+        vec2 uv = 0.5 + 0.5 * v_position.xy;
+
+        float xRangeDamp = 0.8;
+        float xSpeed = 0.25;
+        // moving center pt
+        //vec2 center = vec2((0.5+0.5*sin(time*xSpeed)) * xRangeDamp, 0.5);
+        vec2 center = vec2(mouseX, 1.0-mouseY);
+        vec2 scaledUV = vec2((uv.x - center.x) * aspect, uv.y-center.y);
+
+        float radius = 1.0;
+        //float zSpeed = 1.2;
+
+        gl_FragColor = vec4(radius/2.0);
+
+        
+        /* distortion effect which pulls or pushes pixels away from
+        the center based on their distance from it */
+    
+        float strength = -0.2;
+    
+        float dist = length(scaledUV);
+        
+        /* calc smooth falloff of effect 
+        falloff of 0 means full effect
+        falloff of 1 means no effect */
+        float falloff = smoothstep(0.0, radius, dist);
+        
+        // scalar for effect based on falloff and strength param
+        float effectScalar = 1.0 + strength * (1.0-falloff);
+
+        /* Main effect: push or pull uv based on effect scalar
+        scalar of 1.0 = no change to uv
+        scalar of -1.0 = push pixels fro
+        */
+        uv = center + (uv - center) * effectScalar;
+        
+        // start tile logic 
+        vec4 bg = vec4(0.8, 0.8, 0.8, 1.0);
+        
+        float numCols = 32.0;
+        float cell_w = 1.0 / numCols;
+        float speed = 0.02;
+        float offset = mod(time * speed, 1.0);
+        
+        // get x and y with offset
+        float x = mod(uv.x + (1.0-offset), 1.0);
+        float y = mod(uv.y + (offset), 1.0);
+        
+        float xLocalProgress = mod(x, cell_w) / cell_w;
+        vec4 newcol = vec4(1.0, 1.0, 1.0, 0.0);
+        float row = floor(y / cell_w);  
+        bool evenRow = mod(row, 2.0) == 0.0;
+        if (evenRow && xLocalProgress >= 0.5) {
+            newcol.a = 1.0;
+        }
+        
+        if (!evenRow && xLocalProgress <= 0.5) {
+            newcol.a = 1.0;
+        }
+    
+        vec4 col = mix(bg, newcol, newcol.a);
+        // end tile logic 
+        
+        // give dark border
+        vec4 xDarkEdges = vec4(sin(3.14519 * uv.x));
+        vec4 yDarkEdges = vec4(sin(3.14519 * uv.y));
+        col = mix(col, xDarkEdges, 0.15);
+        col = mix(col, yDarkEdges, 0.15);
+
+        col = mix(col, vec4(aspect, 0.0, 0.0, 1.0), 0.0);
+        gl_FragColor = vec4(col);
+    }
+ 
+ 
+</script>
+<script src="script.js"> console.lg0</script>
+    
 </body>
 </html>
+
