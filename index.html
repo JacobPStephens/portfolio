@@ -46,7 +46,7 @@ for webgl-utils, m3, m4, and webgl-lessons-ui.
         vec2 center = vec2(mouseX, 1.0-mouseY);
         vec2 scaledUV = vec2((uv.x - center.x) * aspect, uv.y-center.y);
 
-        float radius = 1.0;
+        float radius = 0.8;
         //float zSpeed = 1.2;
 
         gl_FragColor = vec4(radius/2.0);
@@ -55,7 +55,7 @@ for webgl-utils, m3, m4, and webgl-lessons-ui.
         /* distortion effect which pulls or pushes pixels away from
         the center based on their distance from it */
     
-        float strength = -0.2;
+        float strength = -0.4;
     
         float dist = length(scaledUV);
         
@@ -76,7 +76,7 @@ for webgl-utils, m3, m4, and webgl-lessons-ui.
         // start tile logic 
         vec4 bg = vec4(0.8, 0.8, 0.8, 1.0);
         
-        float numCols = 32.0;
+        float numCols = 8.0;
         float cell_w = 1.0 / numCols;
         float speed = 0.02;
         float offset = mod(time * speed, 1.0);
@@ -103,10 +103,11 @@ for webgl-utils, m3, m4, and webgl-lessons-ui.
         // give dark border
         vec4 xDarkEdges = vec4(sin(3.14519 * uv.x));
         vec4 yDarkEdges = vec4(sin(3.14519 * uv.y));
-        col = mix(col, xDarkEdges, 0.15);
-        col = mix(col, yDarkEdges, 0.15);
+        col = mix(col, xDarkEdges, 0.0);
+        col = mix(col, yDarkEdges, 0.0);
 
-        col = mix(col, vec4(aspect, 0.0, 0.0, 1.0), 0.0);
+        //col = mix(col, vec4(aspect, 0.0, 0.0, 1.0), 0.0);
+
         gl_FragColor = vec4(col);
     }
  
